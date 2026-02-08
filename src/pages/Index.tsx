@@ -1,12 +1,33 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState } from "react";
+import { Header } from "@/components/layout/Header";
+import { HomeSection } from "@/components/sections/HomeSection";
+import { QuranSection } from "@/components/sections/QuranSection";
+import { AzkarSection } from "@/components/sections/AzkarSection";
+import { TasbihSection } from "@/components/sections/TasbihSection";
+import { QiblaSection } from "@/components/sections/QiblaSection";
 
 const Index = () => {
+  const [activeSection, setActiveSection] = useState("home");
+
+  const renderSection = () => {
+    switch (activeSection) {
+      case "quran":
+        return <QuranSection />;
+      case "azkar":
+        return <AzkarSection />;
+      case "tasbih":
+        return <TasbihSection />;
+      case "qibla":
+        return <QiblaSection />;
+      default:
+        return <HomeSection onSectionChange={setActiveSection} />;
+    }
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
+    <div className="min-h-screen bg-background" dir="rtl">
+      <Header activeSection={activeSection} onSectionChange={setActiveSection} />
+      <main>{renderSection()}</main>
     </div>
   );
 };
