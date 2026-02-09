@@ -11,6 +11,7 @@ interface HeaderProps {
 const navItems = [
   { id: "home", label: "الرئيسية", icon: "🏠" },
   { id: "quran", label: "القرآن", icon: "📖" },
+  { id: "prayer", label: "الصلاة", icon: "🕌" },
   { id: "azkar", label: "الأذكار", icon: "🤲" },
   { id: "tasbih", label: "السبحة", icon: "📿" },
   { id: "qibla", label: "القبلة", icon: "🕋" },
