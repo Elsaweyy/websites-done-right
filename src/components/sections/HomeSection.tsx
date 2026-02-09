@@ -1,4 +1,4 @@
-import { BookOpen, Heart, Compass, Hand } from "lucide-react";
+import { BookOpen, Heart, Compass, Hand, Clock } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
 interface HomeSectionProps {
@@ -9,10 +9,18 @@ const features = [
   {
     id: "quran",
     title: "القرآن الكريم",
-    description: "اقرأ واستمع للقرآن الكريم",
+    description: "اقرأ واستمع للقرآن الكريم مع التفسير",
     icon: BookOpen,
     color: "from-emerald-500 to-green-600",
     emoji: "📖",
+  },
+  {
+    id: "prayer",
+    title: "أوقات الصلاة",
+    description: "مواقيت الصلاة حسب موقعك",
+    icon: Clock,
+    color: "from-sky-500 to-blue-600",
+    emoji: "🕌",
   },
   {
     id: "azkar",

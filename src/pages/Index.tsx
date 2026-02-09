@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Header } from "@/components/layout/Header";
 import { HomeSection } from "@/components/sections/HomeSection";
 import { QuranSection } from "@/components/sections/QuranSection";
+import { PrayerTimesSection } from "@/components/sections/PrayerTimesSection";
 import { AzkarSection } from "@/components/sections/AzkarSection";
 import { TasbihSection } from "@/components/sections/TasbihSection";
 import { QiblaSection } from "@/components/sections/QiblaSection";
@@ -13,6 +14,8 @@ const Index = () => {
     switch (activeSection) {
       case "quran":
         return <QuranSection />;
+      case "prayer":
+        return <PrayerTimesSection />;
       case "azkar":
         return <AzkarSection />;
       case "tasbih":
