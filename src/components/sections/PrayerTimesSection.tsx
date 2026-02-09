@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
-import { Clock, MapPin, Sunrise, Sun, CloudSun, Sunset, Moon, RefreshCw } from "lucide-react";
+import { Clock, MapPin, Sunrise, Sun, CloudSun, Sunset, Moon, RefreshCw, Bell, BellOff } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { usePrayerTimes } from "@/hooks/usePrayerTimes";
+import { usePrayerNotifications } from "@/hooks/usePrayerNotifications";
 
 const prayerIcons: Record<string, React.ReactNode> = {
   الفجر: <Sunrise className="h-6 w-6" />,
@@ -15,6 +17,13 @@ const prayerIcons: Record<string, React.ReactNode> = {
 
 export function PrayerTimesSection() {
   const { prayerTimes, loading, error, locationPermission, requestLocation, getNextPrayer } = usePrayerTimes();
+  const {
+    notificationsEnabled,
+    notificationMinutes,
+    setNotificationMinutes,
+    toggleNotifications,
+    scheduleNotifications,
+  } = usePrayerNotifications();
   const [currentTime, setCurrentTime] = useState(new Date());
   const nextPrayer = getNextPrayer();
 
@@ -24,6 +33,20 @@ export function PrayerTimesSection() {
     }, 1000);
     return () => clearInterval(timer);
   }, []);
+
+  // Schedule notifications when prayer times change
+  useEffect(() => {
+    if (prayerTimes && notificationsEnabled) {
+      const prayers = [
+        { name: "الفجر", time: prayerTimes.fajr },
+        { name: "الظهر", time: prayerTimes.dhuhr },
+        { name: "العصر", time: prayerTimes.asr },
+        { name: "المغرب", time: prayerTimes.maghrib },
+        { name: "العشاء", time: prayerTimes.isha },
+      ];
+      scheduleNotifications(prayers);
+    }
+  }, [prayerTimes, notificationsEnabled, scheduleNotifications]);
 
   const prayers = prayerTimes
     ? [
@@ -93,18 +116,66 @@ export function PrayerTimesSection() {
                   })}
                 </p>
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={requestLocation}
-                className="gap-2"
-              >
-                <RefreshCw className="h-4 w-4" />
-                تحديث الموقع
-              </Button>
+              <div className="flex items-center gap-2 flex-wrap">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={requestLocation}
+                  className="gap-2"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  تحديث الموقع
+                </Button>
+                <Button
+                  variant={notificationsEnabled ? "default" : "outline"}
+                  size="sm"
+                  onClick={toggleNotifications}
+                  className="gap-2"
+                >
+                  {notificationsEnabled ? (
+                    <>
+                      <Bell className="h-4 w-4" />
+                      التنبيهات مفعلة
+                    </>
+                  ) : (
+                    <>
+                      <BellOff className="h-4 w-4" />
+                      تفعيل التنبيهات
+                    </>
+                  )}
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
+
+        {/* Notification Settings */}
+        {notificationsEnabled && (
+          <Card className="mb-6">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between flex-wrap gap-4">
+                <div className="flex items-center gap-2">
+                  <Bell className="h-5 w-5 text-primary" />
+                  <span className="font-arabic">تنبيه قبل الصلاة بـ</span>
+                </div>
+                <Select
+                  value={notificationMinutes.toString()}
+                  onValueChange={(value) => setNotificationMinutes(parseInt(value))}
+                >
+                  <SelectTrigger className="w-[140px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="5">5 دقائق</SelectItem>
+                    <SelectItem value="10">10 دقائق</SelectItem>
+                    <SelectItem value="15">15 دقيقة</SelectItem>
+                    <SelectItem value="30">30 دقيقة</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Next Prayer Card */}
         {nextPrayer && (

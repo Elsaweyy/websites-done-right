@@ -39,6 +39,14 @@ const features = [
     emoji: "📿",
   },
   {
+    id: "salat-nabi",
+    title: "الصلاة على النبي",
+    description: "صلِّ على النبي ﷺ",
+    icon: Heart,
+    color: "from-green-500 to-emerald-600",
+    emoji: "💚",
+  },
+  {
     id: "qibla",
     title: "اتجاه القبلة",
     description: "حدد اتجاه القبلة",

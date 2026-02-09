@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { BookOpen, Play, Pause, ChevronLeft, ChevronRight, Search, Volume2, Book, Loader2, SkipBack, SkipForward, X } from "lucide-react";
+import { BookOpen, Play, Pause, ChevronLeft, ChevronRight, Search, Volume2, Book, Loader2, SkipBack, SkipForward, Share2, Bookmark, History } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,16 +8,27 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Slider } from "@/components/ui/slider";
 import { useSurahsList, useSurah, useTafsir, reciters } from "@/hooks/useQuranApi";
+import { useReadingProgress } from "@/hooks/useReadingProgress";
+import { toast } from "@/hooks/use-toast";
 
 export function QuranSection() {
-  const [selectedSurahNumber, setSelectedSurahNumber] = useState(1);
+  const { lastPosition, saveProgress, getTimeAgo } = useReadingProgress();
+  
+  const [selectedSurahNumber, setSelectedSurahNumber] = useState(() => {
+    return lastPosition?.surahNumber || 1;
+  });
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedReciter, setSelectedReciter] = useState("ar.alafasy");
+  const [selectedReciter, setSelectedReciter] = useState(() => {
+    return lastPosition?.reciter || "ar.alafasy";
+  });
   const [isPlaying, setIsPlaying] = useState(false);
-  const [currentAyahIndex, setCurrentAyahIndex] = useState(0);
+  const [currentAyahIndex, setCurrentAyahIndex] = useState(() => {
+    return lastPosition?.ayahNumber ? lastPosition.ayahNumber - 1 : 0;
+  });
   const [showTafsir, setShowTafsir] = useState(false);
   const [selectedAyahForTafsir, setSelectedAyahForTafsir] = useState<number | null>(null);
   const [audioProgress, setAudioProgress] = useState(0);
+  const [showResumeDialog, setShowResumeDialog] = useState(!!lastPosition);
   
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const ayahRefs = useRef<(HTMLParagraphElement | null)[]>([]);
@@ -89,6 +100,48 @@ export function QuranSection() {
     setShowTafsir(true);
     if (tafsir.length === 0) {
       fetchTafsir();
+    }
+  };
+
+  // Save reading progress
+  const handleSaveProgress = () => {
+    saveProgress(selectedSurahNumber, currentAyahIndex + 1, selectedReciter);
+    toast({
+      title: "تم الحفظ",
+      description: `تم حفظ موضع القراءة - ${surah?.name} آية ${currentAyahIndex + 1}`,
+    });
+  };
+
+  // Share ayah
+  const shareAyah = async (ayahText: string, ayahNumber: number) => {
+    const surahName = surah?.name || "";
+    const shareText = `${ayahText}\n\n📖 ${surahName} - آية ${ayahNumber}`;
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `${surahName} - آية ${ayahNumber}`,
+          text: shareText,
+        });
+      } catch (err) {
+        console.log("Share cancelled");
+      }
+    } else {
+      await navigator.clipboard.writeText(shareText);
+      toast({
+        title: "تم النسخ",
+        description: "تم نسخ الآية إلى الحافظة",
+      });
+    }
+  };
+
+  // Resume reading from last position
+  const resumeReading = () => {
+    if (lastPosition) {
+      setSelectedSurahNumber(lastPosition.surahNumber);
+      setSelectedReciter(lastPosition.reciter);
+      setCurrentAyahIndex(lastPosition.ayahNumber - 1);
+      setShowResumeDialog(false);
     }
   };
 
@@ -209,7 +262,7 @@ export function QuranSection() {
             <CardHeader className="border-b">
               <div className="flex flex-col gap-4">
                 {/* Navigation & Title */}
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between flex-wrap gap-2">
                   <div className="flex items-center gap-2">
                     <Button
                       variant="ghost"
@@ -237,19 +290,30 @@ export function QuranSection() {
                       {surah?.revelationType === "Meccan" ? "مكية" : "مدنية"}
                     </p>
                   </div>
-                  <Select value={selectedReciter} onValueChange={setSelectedReciter}>
-                    <SelectTrigger className="w-[180px]">
-                      <Volume2 className="h-4 w-4 ml-2" />
-                      <SelectValue placeholder="اختر القارئ" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {reciters.map((reciter) => (
-                        <SelectItem key={reciter.id} value={reciter.id}>
-                          {reciter.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleSaveProgress}
+                      className="gap-1"
+                    >
+                      <Bookmark className="h-4 w-4" />
+                      <span className="hidden sm:inline">حفظ</span>
+                    </Button>
+                    <Select value={selectedReciter} onValueChange={setSelectedReciter}>
+                      <SelectTrigger className="w-[140px] md:w-[180px]">
+                        <Volume2 className="h-4 w-4 ml-2" />
+                        <SelectValue placeholder="اختر القارئ" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {reciters.map((reciter) => (
+                          <SelectItem key={reciter.id} value={reciter.id}>
+                            {reciter.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
 
                 {/* Audio Controls */}
@@ -332,18 +396,30 @@ export function QuranSection() {
                         >
                           {ayah.numberInSurah}
                         </span>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="opacity-0 group-hover:opacity-100 mr-2"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleAyahClick(ayah.numberInSurah);
-                          }}
-                        >
-                          <Book className="h-4 w-4" />
-                          <span className="text-xs mr-1">التفسير</span>
-                        </Button>
+                        <span className="opacity-0 group-hover:opacity-100 inline-flex gap-1 mr-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleAyahClick(ayah.numberInSurah);
+                            }}
+                          >
+                            <Book className="h-4 w-4" />
+                            <span className="text-xs mr-1">التفسير</span>
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              shareAyah(ayah.text, ayah.numberInSurah);
+                            }}
+                          >
+                            <Share2 className="h-4 w-4" />
+                            <span className="text-xs mr-1">مشاركة</span>
+                          </Button>
+                        </span>
                       </p>
                     ))}
                   </div>
@@ -383,6 +459,17 @@ export function QuranSection() {
                       {selectedTafsirText}
                     </p>
                   </div>
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => {
+                      const ayahText = surah?.ayahs.find((a) => a.numberInSurah === selectedAyahForTafsir)?.text || "";
+                      shareAyah(ayahText, selectedAyahForTafsir || 0);
+                    }}
+                  >
+                    <Share2 className="h-4 w-4 ml-2" />
+                    مشاركة الآية
+                  </Button>
                 </div>
               ) : (
                 <p className="text-center text-muted-foreground py-8">
@@ -390,6 +477,37 @@ export function QuranSection() {
                 </p>
               )}
             </ScrollArea>
+          </DialogContent>
+        </Dialog>
+
+        {/* Resume Reading Dialog */}
+        <Dialog open={showResumeDialog} onOpenChange={setShowResumeDialog}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-arabic flex items-center gap-2">
+                <History className="h-5 w-5 text-primary" />
+                استكمال القراءة
+              </DialogTitle>
+              <DialogDescription>
+                هل تريد استكمال القراءة من آخر موضع؟
+              </DialogDescription>
+            </DialogHeader>
+            {lastPosition && (
+              <div className="p-4 bg-primary/5 rounded-lg text-center">
+                <p className="font-arabic text-lg mb-2">
+                  سورة رقم {lastPosition.surahNumber} - آية {lastPosition.ayahNumber}
+                </p>
+                <p className="text-sm text-muted-foreground">{getTimeAgo()}</p>
+              </div>
+            )}
+            <div className="flex gap-3">
+              <Button onClick={resumeReading} className="flex-1">
+                استكمال القراءة
+              </Button>
+              <Button variant="outline" onClick={() => setShowResumeDialog(false)} className="flex-1">
+                البدء من جديد
+              </Button>
+            </div>
           </DialogContent>
         </Dialog>
       </div>

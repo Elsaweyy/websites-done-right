@@ -14,6 +14,7 @@ const navItems = [
   { id: "prayer", label: "الصلاة", icon: "🕌" },
   { id: "azkar", label: "الأذكار", icon: "🤲" },
   { id: "tasbih", label: "السبحة", icon: "📿" },
+  { id: "salat-nabi", label: "الصلاة على النبي", icon: "💚" },
   { id: "qibla", label: "القبلة", icon: "🕋" },
 ];
 
