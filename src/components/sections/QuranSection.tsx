@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { BookOpen, Play, Pause, ChevronLeft, ChevronRight, Search, Volume2, Book, Loader2, SkipBack, SkipForward, Share2, Bookmark, History } from "lucide-react";
+import { BookOpen, Play, Pause, ChevronLeft, ChevronRight, Search, Volume2, Book, Loader2, SkipBack, SkipForward, Share2, Bookmark, History, Download, Wifi, WifiOff } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,12 +7,15 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Slider } from "@/components/ui/slider";
+import { Progress } from "@/components/ui/progress";
 import { useSurahsList, useSurah, useTafsir, reciters } from "@/hooks/useQuranApi";
 import { useReadingProgress } from "@/hooks/useReadingProgress";
+import { useOfflineQuran } from "@/hooks/useOfflineQuran";
 import { toast } from "@/hooks/use-toast";
 
 export function QuranSection() {
   const { lastPosition, saveProgress, getTimeAgo } = useReadingProgress();
+  const { isCaching, cacheProgress, isSurahCached, cacheAllSurahs, clearCache, getCacheSize, cacheMeta } = useOfflineQuran();
   
   const [selectedSurahNumber, setSelectedSurahNumber] = useState(() => {
     return lastPosition?.surahNumber || 1;
@@ -189,6 +192,41 @@ export function QuranSection() {
           <div>
             <h2 className="text-3xl font-bold text-primary font-arabic">القرآن الكريم</h2>
             <p className="text-muted-foreground">اقرأ واستمع للقرآن الكريم - 114 سورة</p>
+          </div>
+          <div className="flex items-center gap-2 mr-auto">
+            {isCaching ? (
+              <div className="flex items-center gap-2 px-3 py-2 bg-muted rounded-lg">
+                <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                <span className="text-sm">{cacheProgress}%</span>
+              </div>
+            ) : (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  if (cacheMeta.cachedSurahs.length > 0) {
+                    clearCache();
+                    toast({ title: "تم مسح الذاكرة المؤقتة" });
+                  } else {
+                    cacheAllSurahs();
+                    toast({ title: "جاري تحميل القرآن للقراءة بدون إنترنت..." });
+                  }
+                }}
+                className="gap-1"
+              >
+                {cacheMeta.cachedSurahs.length > 0 ? (
+                  <>
+                    <WifiOff className="h-4 w-4" />
+                    <span className="hidden sm:inline">محفوظ ({getCacheSize()})</span>
+                  </>
+                ) : (
+                  <>
+                    <Download className="h-4 w-4" />
+                    <span className="hidden sm:inline">تحميل للقراءة بدون إنترنت</span>
+                  </>
+                )}
+              </Button>
+            )}
           </div>
         </div>
 

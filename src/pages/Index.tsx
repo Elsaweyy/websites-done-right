@@ -7,6 +7,9 @@ import { AzkarSection } from "@/components/sections/AzkarSection";
 import { TasbihSection } from "@/components/sections/TasbihSection";
 import { QiblaSection } from "@/components/sections/QiblaSection";
 import { SalatAlaNabiSection } from "@/components/sections/SalatAlaNabiSection";
+import { DuaSection } from "@/components/sections/DuaSection";
+import { StatsSection } from "@/components/sections/StatsSection";
+import { InfoSection } from "@/components/sections/InfoSection";
 
 const Index = () => {
   const [activeSection, setActiveSection] = useState("home");
@@ -25,6 +28,12 @@ const Index = () => {
         return <QiblaSection />;
       case "salat-nabi":
         return <SalatAlaNabiSection />;
+      case "dua":
+        return <DuaSection />;
+      case "stats":
+        return <StatsSection />;
+      case "info":
+        return <InfoSection />;
       default:
         return <HomeSection onSectionChange={setActiveSection} />;
     }
