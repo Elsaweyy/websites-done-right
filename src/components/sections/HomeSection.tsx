@@ -47,12 +47,28 @@ const features = [
     emoji: "💚",
   },
   {
+    id: "dua",
+    title: "مكتبة الأدعية",
+    description: "أدعية من القرآن والسنة",
+    icon: BookOpen,
+    color: "from-purple-500 to-violet-600",
+    emoji: "📚",
+  },
+  {
     id: "qibla",
     title: "اتجاه القبلة",
     description: "حدد اتجاه القبلة",
     icon: Compass,
     color: "from-blue-500 to-indigo-600",
     emoji: "🕋",
+  },
+  {
+    id: "stats",
+    title: "الإحصائيات",
+    description: "تتبع تقدمك اليومي",
+    icon: BookOpen,
+    color: "from-orange-500 to-red-600",
+    emoji: "📊",
   },
 ];
 

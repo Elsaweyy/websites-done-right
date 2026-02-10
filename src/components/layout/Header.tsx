@@ -15,7 +15,10 @@ const navItems = [
   { id: "azkar", label: "الأذكار", icon: "🤲" },
   { id: "tasbih", label: "السبحة", icon: "📿" },
   { id: "salat-nabi", label: "الصلاة على النبي", icon: "💚" },
+  { id: "dua", label: "الأدعية", icon: "📚" },
   { id: "qibla", label: "القبلة", icon: "🕋" },
+  { id: "stats", label: "الإحصائيات", icon: "📊" },
+  { id: "info", label: "عن التطبيق", icon: "ℹ️" },
 ];
 
 export function Header({ activeSection, onSectionChange }: HeaderProps) {
