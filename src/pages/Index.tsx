@@ -10,6 +10,8 @@ import { SalatAlaNabiSection } from "@/components/sections/SalatAlaNabiSection";
 import { DuaSection } from "@/components/sections/DuaSection";
 import { StatsSection } from "@/components/sections/StatsSection";
 import { InfoSection } from "@/components/sections/InfoSection";
+import { WirdSection } from "@/components/sections/WirdSection";
+import { DailyAyah } from "@/components/DailyAyah";
 
 const Index = () => {
   const [activeSection, setActiveSection] = useState("home");
@@ -30,6 +32,8 @@ const Index = () => {
         return <SalatAlaNabiSection />;
       case "dua":
         return <DuaSection />;
+      case "wird":
+        return <WirdSection />;
       case "stats":
         return <StatsSection />;
       case "info":
@@ -41,6 +45,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background" dir="rtl">
+      <DailyAyah />
       <Header activeSection={activeSection} onSectionChange={setActiveSection} />
       <main>{renderSection()}</main>
     </div>
