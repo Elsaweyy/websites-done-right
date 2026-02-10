@@ -55,6 +55,14 @@ const features = [
     emoji: "📚",
   },
   {
+    id: "wird",
+    title: "الورد اليومي",
+    description: "حافظ على وردك من القرآن",
+    icon: BookOpen,
+    color: "from-teal-500 to-cyan-600",
+    emoji: "📅",
+  },
+  {
     id: "qibla",
     title: "اتجاه القبلة",
     description: "حدد اتجاه القبلة",
