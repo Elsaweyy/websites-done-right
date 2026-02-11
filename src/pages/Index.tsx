@@ -12,6 +12,7 @@ import { StatsSection } from "@/components/sections/StatsSection";
 import { InfoSection } from "@/components/sections/InfoSection";
 import { WirdSection } from "@/components/sections/WirdSection";
 import { KhatmaSection } from "@/components/sections/KhatmaSection";
+import { ChallengesSection } from "@/components/sections/ChallengesSection";
 import { DailyAyah } from "@/components/DailyAyah";
 
 const Index = () => {
@@ -37,6 +38,8 @@ const Index = () => {
         return <WirdSection />;
       case "khatma":
         return <KhatmaSection />;
+      case "challenges":
+        return <ChallengesSection />;
       case "stats":
         return <StatsSection />;
       case "info":
