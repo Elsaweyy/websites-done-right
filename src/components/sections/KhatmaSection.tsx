@@ -1,0 +1,138 @@
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
+import { useKhatma, Khatma } from "@/hooks/useKhatma";
+import { BookOpen, Award, Plus, RotateCcw, Share2 } from "lucide-react";
+
+export function KhatmaSection() {
+  const { currentPage, totalPages, khatmaList, progress, addPages, resetCurrent } = useKhatma();
+  const [pagesToAdd, setPagesToAdd] = useState(1);
+  const [showCertificate, setShowCertificate] = useState<Khatma | null>(null);
+
+  const shareCertificate = (khatma: Khatma) => {
+    const text = `🎉 الحمد لله أتممت ختمة القرآن الكريم رقم ${khatma.id}\n📅 من ${khatma.startDate} إلى ${khatma.completedDate}\n⏱️ في ${khatma.daysToComplete} يوم\n\nعبر تطبيق نور الإسلام`;
+    if (navigator.share) {
+      navigator.share({ title: "شهادة ختم القرآن", text });
+    } else {
+      navigator.clipboard.writeText(text);
+    }
+  };
+
+  return (
+    <section className="min-h-[calc(100vh-4rem)] islamic-pattern">
+      <div className="container mx-auto px-4 py-8 max-w-2xl">
+        <div className="text-center mb-8">
+          <span className="text-5xl mb-4 block">📖</span>
+          <h2 className="text-3xl font-bold text-primary font-arabic">تتبع الختمات</h2>
+          <p className="text-muted-foreground mt-2">تابع تقدمك في ختم القرآن الكريم</p>
+        </div>
+
+        {/* Current Progress */}
+        <Card className="mb-6 border-2 border-primary/20">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-primary font-arabic">
+              <BookOpen className="h-5 w-5" />
+              الختمة الحالية #{khatmaList.length + 1}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="text-center">
+              <span className="text-5xl font-bold text-primary">{progress}%</span>
+              <p className="text-muted-foreground mt-1">
+                صفحة {currentPage} من {totalPages}
+              </p>
+            </div>
+            <Progress value={progress} className="h-4" />
+
+            <div className="flex items-center gap-2 justify-center flex-wrap">
+              {[1, 2, 5, 10, 20].map(n => (
+                <Button
+                  key={n}
+                  variant={pagesToAdd === n ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setPagesToAdd(n)}
+                >
+                  {n}
+                </Button>
+              ))}
+            </div>
+
+            <div className="flex gap-2 justify-center">
+              <Button onClick={() => addPages(pagesToAdd)} className="gap-2">
+                <Plus className="h-4 w-4" />
+                أضف {pagesToAdd} {pagesToAdd === 1 ? "صفحة" : "صفحات"}
+              </Button>
+              <Button variant="outline" onClick={resetCurrent} className="gap-2">
+                <RotateCcw className="h-4 w-4" />
+                إعادة
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Completed Khatmas */}
+        {khatmaList.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-primary font-arabic">
+                <Award className="h-5 w-5" />
+                الختمات المكتملة ({khatmaList.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {khatmaList.map(khatma => (
+                <div key={khatma.id}>
+                  {showCertificate?.id === khatma.id ? (
+                    <Card className="border-2 border-primary/30 bg-gradient-to-br from-primary/5 to-accent/5">
+                      <CardContent className="p-6 text-center space-y-3">
+                        <span className="text-6xl block">🏆</span>
+                        <h3 className="text-2xl font-bold text-primary font-arabic">شهادة إتمام ختمة</h3>
+                        <div className="border-t border-b border-primary/20 py-3 my-2">
+                          <p className="text-lg font-arabic">الختمة رقم {khatma.id}</p>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            من {khatma.startDate} إلى {khatma.completedDate}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            تمت في {khatma.daysToComplete} يوم
+                          </p>
+                        </div>
+                        <p className="text-primary font-arabic text-lg">
+                          "وَرَتِّلِ الْقُرْآنَ تَرْتِيلًا"
+                        </p>
+                        <div className="flex gap-2 justify-center">
+                          <Button size="sm" onClick={() => shareCertificate(khatma)} className="gap-1">
+                            <Share2 className="h-3 w-3" />
+                            مشاركة
+                          </Button>
+                          <Button size="sm" variant="outline" onClick={() => setShowCertificate(null)}>
+                            إغلاق
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    <div
+                      className="flex items-center justify-between p-3 rounded-lg bg-muted/50 cursor-pointer hover:bg-muted transition-colors"
+                      onClick={() => setShowCertificate(khatma)}
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-2xl">🏅</span>
+                        <div>
+                          <p className="font-semibold">الختمة #{khatma.id}</p>
+                          <p className="text-xs text-muted-foreground">{khatma.completedDate}</p>
+                        </div>
+                      </div>
+                      <Badge variant="secondary">{khatma.daysToComplete} يوم</Badge>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    </section>
+  );
+}
