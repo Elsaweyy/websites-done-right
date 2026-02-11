@@ -18,6 +18,7 @@ const navItems = [
   { id: "dua", label: "الأدعية", icon: "📚" },
   { id: "wird", label: "الورد اليومي", icon: "📅" },
   { id: "khatma", label: "الختمات", icon: "🏆" },
+  { id: "challenges", label: "التحديات", icon: "🎯" },
   { id: "qibla", label: "القبلة", icon: "🕋" },
   { id: "stats", label: "الإحصائيات", icon: "📊" },
   { id: "info", label: "عن التطبيق", icon: "ℹ️" },

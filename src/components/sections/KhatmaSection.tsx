@@ -1,15 +1,24 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { useKhatma, Khatma } from "@/hooks/useKhatma";
-import { BookOpen, Award, Plus, RotateCcw, Share2 } from "lucide-react";
+import { BookOpen, Award, Plus, RotateCcw, Share2, X } from "lucide-react";
 
 export function KhatmaSection() {
   const { currentPage, totalPages, khatmaList, progress, addPages, resetCurrent } = useKhatma();
   const [pagesToAdd, setPagesToAdd] = useState(1);
   const [showCertificate, setShowCertificate] = useState<Khatma | null>(null);
+  const prevKhatmaCount = useRef(khatmaList.length);
+
+  // Auto-show certificate when a new khatma is completed
+  useEffect(() => {
+    if (khatmaList.length > prevKhatmaCount.current) {
+      setShowCertificate(khatmaList[khatmaList.length - 1]);
+    }
+    prevKhatmaCount.current = khatmaList.length;
+  }, [khatmaList.length]);
 
   const shareCertificate = (khatma: Khatma) => {
     const text = `🎉 الحمد لله أتممت ختمة القرآن الكريم رقم ${khatma.id}\n📅 من ${khatma.startDate} إلى ${khatma.completedDate}\n⏱️ في ${khatma.daysToComplete} يوم\n\nعبر تطبيق نور الإسلام`;
@@ -20,8 +29,62 @@ export function KhatmaSection() {
     }
   };
 
+  const CertificateCard = ({ khatma }: { khatma: Khatma }) => (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+      <Card className="w-full max-w-md border-4 border-primary/40 bg-gradient-to-br from-card via-primary/5 to-accent/10 shadow-2xl animate-in fade-in zoom-in duration-500">
+        <CardContent className="p-8 text-center space-y-4 relative">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute top-2 left-2"
+            onClick={() => setShowCertificate(null)}
+          >
+            <X className="h-4 w-4" />
+          </Button>
+
+          {/* Decorative top */}
+          <div className="flex justify-center gap-2 text-3xl">
+            <span>🌟</span><span>🏆</span><span>🌟</span>
+          </div>
+
+          <div className="border-2 border-primary/20 rounded-xl p-6 space-y-3">
+            <p className="text-sm text-muted-foreground">بسم الله الرحمن الرحيم</p>
+            <h3 className="text-2xl font-bold text-primary font-arabic">شهادة إتمام ختمة</h3>
+            <div className="w-16 h-0.5 bg-primary/30 mx-auto" />
+
+            <p className="text-4xl font-bold text-primary">#{khatma.id}</p>
+
+            <div className="space-y-1 text-sm">
+              <p>📅 بدأت: <span className="font-semibold">{khatma.startDate}</span></p>
+              <p>✅ انتهت: <span className="font-semibold">{khatma.completedDate}</span></p>
+              <p>⏱️ المدة: <span className="font-semibold">{khatma.daysToComplete} يوم</span></p>
+            </div>
+
+            <div className="w-16 h-0.5 bg-primary/30 mx-auto" />
+            <p className="text-primary font-arabic text-lg leading-relaxed">
+              "وَرَتِّلِ الْقُرْآنَ تَرْتِيلًا"
+            </p>
+            <p className="text-xs text-muted-foreground">سورة المزمل - آية 4</p>
+          </div>
+
+          <div className="flex gap-2 justify-center pt-2">
+            <Button onClick={() => shareCertificate(khatma)} className="gap-2">
+              <Share2 className="h-4 w-4" />
+              مشاركة الشهادة
+            </Button>
+            <Button variant="outline" onClick={() => setShowCertificate(null)}>
+              إغلاق
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+
   return (
     <section className="min-h-[calc(100vh-4rem)] islamic-pattern">
+      {showCertificate && <CertificateCard khatma={showCertificate} />}
+
       <div className="container mx-auto px-4 py-8 max-w-2xl">
         <div className="text-center mb-8">
           <span className="text-5xl mb-4 block">📖</span>
@@ -83,50 +146,22 @@ export function KhatmaSection() {
             </CardHeader>
             <CardContent className="space-y-3">
               {khatmaList.map(khatma => (
-                <div key={khatma.id}>
-                  {showCertificate?.id === khatma.id ? (
-                    <Card className="border-2 border-primary/30 bg-gradient-to-br from-primary/5 to-accent/5">
-                      <CardContent className="p-6 text-center space-y-3">
-                        <span className="text-6xl block">🏆</span>
-                        <h3 className="text-2xl font-bold text-primary font-arabic">شهادة إتمام ختمة</h3>
-                        <div className="border-t border-b border-primary/20 py-3 my-2">
-                          <p className="text-lg font-arabic">الختمة رقم {khatma.id}</p>
-                          <p className="text-sm text-muted-foreground mt-1">
-                            من {khatma.startDate} إلى {khatma.completedDate}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            تمت في {khatma.daysToComplete} يوم
-                          </p>
-                        </div>
-                        <p className="text-primary font-arabic text-lg">
-                          "وَرَتِّلِ الْقُرْآنَ تَرْتِيلًا"
-                        </p>
-                        <div className="flex gap-2 justify-center">
-                          <Button size="sm" onClick={() => shareCertificate(khatma)} className="gap-1">
-                            <Share2 className="h-3 w-3" />
-                            مشاركة
-                          </Button>
-                          <Button size="sm" variant="outline" onClick={() => setShowCertificate(null)}>
-                            إغلاق
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ) : (
-                    <div
-                      className="flex items-center justify-between p-3 rounded-lg bg-muted/50 cursor-pointer hover:bg-muted transition-colors"
-                      onClick={() => setShowCertificate(khatma)}
-                    >
-                      <div className="flex items-center gap-3">
-                        <span className="text-2xl">🏅</span>
-                        <div>
-                          <p className="font-semibold">الختمة #{khatma.id}</p>
-                          <p className="text-xs text-muted-foreground">{khatma.completedDate}</p>
-                        </div>
-                      </div>
-                      <Badge variant="secondary">{khatma.daysToComplete} يوم</Badge>
+                <div
+                  key={khatma.id}
+                  className="flex items-center justify-between p-3 rounded-lg bg-muted/50 cursor-pointer hover:bg-muted transition-colors"
+                  onClick={() => setShowCertificate(khatma)}
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">🏅</span>
+                    <div>
+                      <p className="font-semibold">الختمة #{khatma.id}</p>
+                      <p className="text-xs text-muted-foreground">{khatma.completedDate}</p>
                     </div>
-                  )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary">{khatma.daysToComplete} يوم</Badge>
+                    <span className="text-xs text-primary">عرض الشهادة →</span>
+                  </div>
                 </div>
               ))}
             </CardContent>

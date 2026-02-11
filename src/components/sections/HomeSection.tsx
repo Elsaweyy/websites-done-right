@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { useUsageStats } from "@/hooks/useUsageStats";
 import { useKhatma } from "@/hooks/useKhatma";
 import { useDailyWird } from "@/hooks/useDailyWird";
+import { useChallenges } from "@/hooks/useChallenges";
 
 interface HomeSectionProps {
   onSectionChange: (section: string) => void;
@@ -19,6 +20,7 @@ const features = [
   { id: "dua", title: "مكتبة الأدعية", description: "أدعية من القرآن والسنة", color: "from-purple-500 to-violet-600", emoji: "📚" },
   { id: "wird", title: "الورد اليومي", description: "حافظ على وردك من القرآن", color: "from-teal-500 to-cyan-600", emoji: "📅" },
   { id: "khatma", title: "تتبع الختمات", description: "تابع ختماتك وإنجازاتك", color: "from-yellow-500 to-amber-600", emoji: "🏆" },
+  { id: "challenges", title: "التحديات الأسبوعية", description: "أكمل التحديات واكسب النقاط", color: "from-red-500 to-rose-600", emoji: "🎯" },
   { id: "qibla", title: "اتجاه القبلة", description: "حدد اتجاه القبلة", color: "from-blue-500 to-indigo-600", emoji: "🕋" },
   { id: "stats", title: "الإحصائيات", description: "تتبع تقدمك اليومي", color: "from-orange-500 to-red-600", emoji: "📊" },
 ];
@@ -27,7 +29,9 @@ export function HomeSection({ onSectionChange }: HomeSectionProps) {
   const { stats, getTodayStats } = useUsageStats();
   const { currentPage, totalPages, progress: khatmaProgress, khatmaList } = useKhatma();
   const { progress: wirdProgress } = useDailyWird();
+  const { progress: challengeProgress, challenges, totalPoints, currentLevel } = useChallenges();
   const todayStats = getTodayStats();
+  const completedChallenges = challengeProgress.filter(p => p.completed).length;
 
   return (
     <section className="min-h-[calc(100vh-4rem)] islamic-pattern">
@@ -103,19 +107,19 @@ export function HomeSection({ onSectionChange }: HomeSectionProps) {
             </CardContent>
           </Card>
 
-          {/* Streak & Achievements */}
+          {/* Challenges Widget */}
           <Card
             className="cursor-pointer hover:shadow-lg transition-all hover:-translate-y-1 border-primary/20"
-            onClick={() => onSectionChange("khatma")}
+            onClick={() => onSectionChange("challenges")}
           >
             <CardContent className="p-4">
               <div className="flex items-center gap-2 mb-2">
-                <span className="text-xl">🏆</span>
-                <h3 className="font-semibold text-sm">الإنجازات</h3>
+                <span className="text-xl">🎯</span>
+                <h3 className="font-semibold text-sm">التحديات</h3>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">{khatmaList.length} ختمة</span>
-                <Badge className="text-xs">🔥 {stats.streak} يوم متتالي</Badge>
+                <span className="text-xs text-muted-foreground">{completedChallenges}/{challenges.length} مكتمل</span>
+                <Badge className="text-xs">{currentLevel?.emoji || "⭐"} {totalPoints} نقطة</Badge>
               </div>
             </CardContent>
           </Card>
