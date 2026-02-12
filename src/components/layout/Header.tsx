@@ -1,7 +1,10 @@
-import { Moon, Sun, Menu, X } from "lucide-react";
+import { Moon, Sun, Menu, X, User, LogIn } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/useProfile";
 
 interface HeaderProps {
   activeSection: string;
@@ -19,6 +22,7 @@ const navItems = [
   { id: "wird", label: "الورد اليومي", icon: "📅" },
   { id: "khatma", label: "الختمات", icon: "🏆" },
   { id: "challenges", label: "التحديات", icon: "🎯" },
+  { id: "leaderboard", label: "المتصدرين", icon: "🥇" },
   { id: "qibla", label: "القبلة", icon: "🕋" },
   { id: "stats", label: "الإحصائيات", icon: "📊" },
   { id: "info", label: "عن التطبيق", icon: "ℹ️" },
@@ -27,6 +31,8 @@ const navItems = [
 export function Header({ activeSection, onSectionChange }: HeaderProps) {
   const [isDark, setIsDark] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user } = useAuth();
+  const { profile } = useProfile();
 
   useEffect(() => {
     if (isDark) {
@@ -66,6 +72,25 @@ export function Header({ activeSection, onSectionChange }: HeaderProps) {
 
           {/* Actions */}
           <div className="flex items-center gap-2">
+            {/* Profile / Login Button */}
+            <Button
+              variant={activeSection === "profile" || activeSection === "auth" ? "default" : "ghost"}
+              size="icon"
+              className="rounded-full"
+              onClick={() => onSectionChange(user ? "profile" : "auth")}
+            >
+              {user ? (
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src={profile?.avatar_url || ""} />
+                  <AvatarFallback className="text-xs">
+                    {profile?.display_name?.[0] || user.email?.[0] || "؟"}
+                  </AvatarFallback>
+                </Avatar>
+              ) : (
+                <LogIn className="h-5 w-5" />
+              )}
+            </Button>
+
             <Button
               variant="ghost"
               size="icon"

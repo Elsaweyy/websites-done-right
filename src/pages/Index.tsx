@@ -13,39 +13,34 @@ import { InfoSection } from "@/components/sections/InfoSection";
 import { WirdSection } from "@/components/sections/WirdSection";
 import { KhatmaSection } from "@/components/sections/KhatmaSection";
 import { ChallengesSection } from "@/components/sections/ChallengesSection";
+import { AuthSection } from "@/components/sections/AuthSection";
+import { ProfileSection } from "@/components/sections/ProfileSection";
+import { LeaderboardSection } from "@/components/sections/LeaderboardSection";
 import { DailyAyah } from "@/components/DailyAyah";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Index = () => {
   const [activeSection, setActiveSection] = useState("home");
+  const { user } = useAuth();
 
   const renderSection = () => {
     switch (activeSection) {
-      case "quran":
-        return <QuranSection />;
-      case "prayer":
-        return <PrayerTimesSection />;
-      case "azkar":
-        return <AzkarSection />;
-      case "tasbih":
-        return <TasbihSection />;
-      case "qibla":
-        return <QiblaSection />;
-      case "salat-nabi":
-        return <SalatAlaNabiSection />;
-      case "dua":
-        return <DuaSection />;
-      case "wird":
-        return <WirdSection />;
-      case "khatma":
-        return <KhatmaSection />;
-      case "challenges":
-        return <ChallengesSection />;
-      case "stats":
-        return <StatsSection />;
-      case "info":
-        return <InfoSection />;
-      default:
-        return <HomeSection onSectionChange={setActiveSection} />;
+      case "quran": return <QuranSection />;
+      case "prayer": return <PrayerTimesSection />;
+      case "azkar": return <AzkarSection />;
+      case "tasbih": return <TasbihSection />;
+      case "qibla": return <QiblaSection />;
+      case "salat-nabi": return <SalatAlaNabiSection />;
+      case "dua": return <DuaSection />;
+      case "wird": return <WirdSection />;
+      case "khatma": return <KhatmaSection />;
+      case "challenges": return <ChallengesSection />;
+      case "stats": return <StatsSection />;
+      case "info": return <InfoSection />;
+      case "leaderboard": return <LeaderboardSection />;
+      case "auth": return user ? <ProfileSection /> : <AuthSection />;
+      case "profile": return user ? <ProfileSection /> : <AuthSection />;
+      default: return <HomeSection onSectionChange={setActiveSection} />;
     }
   };
 

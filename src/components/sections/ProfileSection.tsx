@@ -1,0 +1,124 @@
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/useProfile";
+import { useToast } from "@/hooks/use-toast";
+import { User, Save, LogOut, Trophy, BookOpen, Star } from "lucide-react";
+
+export function ProfileSection() {
+  const { user, signOut } = useAuth();
+  const { profile, updateProfile } = useProfile();
+  const { toast } = useToast();
+  const [displayName, setDisplayName] = useState("");
+  const [username, setUsername] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (profile) {
+      setDisplayName(profile.display_name || "");
+      setUsername(profile.username || "");
+      setAvatarUrl(profile.avatar_url || "");
+    }
+  }, [profile]);
+
+  const handleSave = async () => {
+    setSaving(true);
+    const error = await updateProfile({
+      display_name: displayName,
+      username,
+      avatar_url: avatarUrl,
+    });
+    if (error) {
+      toast({ title: "خطأ", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "تم حفظ البيانات ✅" });
+    }
+    setSaving(false);
+  };
+
+  return (
+    <section className="min-h-[calc(100vh-4rem)] islamic-pattern py-8">
+      <div className="container mx-auto px-4 max-w-lg">
+        <div className="text-center mb-8">
+          <span className="text-5xl mb-4 block">👤</span>
+          <h2 className="text-3xl font-bold text-primary font-arabic">الملف الشخصي</h2>
+        </div>
+
+        <Card className="mb-6">
+          <CardContent className="p-6 space-y-4">
+            <div className="flex justify-center">
+              <Avatar className="w-24 h-24">
+                <AvatarImage src={avatarUrl} />
+                <AvatarFallback className="text-2xl">
+                  {displayName?.[0] || user?.email?.[0] || "؟"}
+                </AvatarFallback>
+              </Avatar>
+            </div>
+
+            <div>
+              <Label>الاسم</Label>
+              <Input value={displayName} onChange={e => setDisplayName(e.target.value)} placeholder="اسمك" />
+            </div>
+            <div>
+              <Label>اسم المستخدم</Label>
+              <Input value={username} onChange={e => setUsername(e.target.value)} placeholder="username" dir="ltr" />
+            </div>
+            <div>
+              <Label>رابط الصورة</Label>
+              <Input value={avatarUrl} onChange={e => setAvatarUrl(e.target.value)} placeholder="https://..." dir="ltr" />
+            </div>
+
+            <Button onClick={handleSave} className="w-full gap-2" disabled={saving}>
+              <Save className="h-4 w-4" />
+              حفظ التغييرات
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Stats */}
+        {profile && (
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-primary font-arabic">
+                <Star className="h-5 w-5" />
+                إحصائياتك
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="text-center p-3 rounded-lg bg-muted/50">
+                  <Trophy className="h-6 w-6 mx-auto text-primary mb-1" />
+                  <p className="text-2xl font-bold text-primary">{profile.total_points}</p>
+                  <p className="text-xs text-muted-foreground">النقاط</p>
+                </div>
+                <div className="text-center p-3 rounded-lg bg-muted/50">
+                  <BookOpen className="h-6 w-6 mx-auto text-primary mb-1" />
+                  <p className="text-2xl font-bold text-primary">{profile.total_khatmas}</p>
+                  <p className="text-xs text-muted-foreground">الختمات</p>
+                </div>
+                <div className="text-center p-3 rounded-lg bg-muted/50">
+                  <p className="text-2xl font-bold text-primary">{profile.total_pages_read}</p>
+                  <p className="text-xs text-muted-foreground">صفحات مقروءة</p>
+                </div>
+                <div className="text-center p-3 rounded-lg bg-muted/50">
+                  <p className="text-2xl font-bold text-primary">{profile.streak_days}</p>
+                  <p className="text-xs text-muted-foreground">أيام متتالية</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        <Button variant="destructive" className="w-full gap-2" onClick={signOut}>
+          <LogOut className="h-4 w-4" />
+          تسجيل الخروج
+        </Button>
+      </div>
+    </section>
+  );
+}
