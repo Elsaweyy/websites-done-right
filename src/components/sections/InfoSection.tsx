@@ -1,5 +1,6 @@
 import { Heart, Code, Github, Mail } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import ahmedPhoto from "@/assets/ahmed-elsawey.webp";
 
 export function InfoSection() {
   return (
@@ -47,8 +48,8 @@ export function InfoSection() {
                 <h3 className="text-xl font-bold text-primary">من صنع</h3>
               </div>
               
-              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/20 mb-4">
-                <span className="text-3xl font-bold text-primary">AE</span>
+              <div className="inline-flex items-center justify-center w-28 h-28 rounded-full overflow-hidden mb-4 ring-2 ring-primary/30">
+                <img src={ahmedPhoto} alt="Ahmed Elsawey" className="w-full h-full object-cover" />
               </div>
               
               <h4 className="text-2xl font-bold text-foreground mb-2">Ahmed Elsawey</h4>
