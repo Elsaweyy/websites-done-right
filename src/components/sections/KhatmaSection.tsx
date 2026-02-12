@@ -3,16 +3,23 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useKhatma, Khatma } from "@/hooks/useKhatma";
-import { BookOpen, Award, Plus, RotateCcw, Share2, X } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/useProfile";
+import { BookOpen, Award, Plus, RotateCcw, Share2, X, Calendar } from "lucide-react";
 
 export function KhatmaSection() {
-  const { currentPage, totalPages, khatmaList, progress, addPages, resetCurrent } = useKhatma();
+  const {
+    currentPage, totalPages, khatmaList, progress, addPages, resetCurrent,
+    targetMonths, setTargetMonths, dailyTarget,
+  } = useKhatma();
+  const { user } = useAuth();
+  const { profile } = useProfile();
   const [pagesToAdd, setPagesToAdd] = useState(1);
   const [showCertificate, setShowCertificate] = useState<Khatma | null>(null);
   const prevKhatmaCount = useRef(khatmaList.length);
 
-  // Auto-show certificate when a new khatma is completed
   useEffect(() => {
     if (khatmaList.length > prevKhatmaCount.current) {
       setShowCertificate(khatmaList[khatmaList.length - 1]);
@@ -20,8 +27,10 @@ export function KhatmaSection() {
     prevKhatmaCount.current = khatmaList.length;
   }, [khatmaList.length]);
 
+  const userName = profile?.display_name || user?.user_metadata?.full_name || "مستخدم";
+
   const shareCertificate = (khatma: Khatma) => {
-    const text = `🎉 الحمد لله أتممت ختمة القرآن الكريم رقم ${khatma.id}\n📅 من ${khatma.startDate} إلى ${khatma.completedDate}\n⏱️ في ${khatma.daysToComplete} يوم\n\nعبر تطبيق نور الإسلام`;
+    const text = `🎉 الحمد لله أتممت ختمة القرآن الكريم رقم ${khatma.id}\n👤 ${userName}\n📅 من ${khatma.startDate} إلى ${khatma.completedDate}\n⏱️ في ${khatma.daysToComplete} يوم\n\nعبر تطبيق نور الإسلام ☪️`;
     if (navigator.share) {
       navigator.share({ title: "شهادة ختم القرآن", text });
     } else {
@@ -42,15 +51,23 @@ export function KhatmaSection() {
             <X className="h-4 w-4" />
           </Button>
 
-          {/* Decorative top */}
           <div className="flex justify-center gap-2 text-3xl">
             <span>🌟</span><span>🏆</span><span>🌟</span>
           </div>
 
           <div className="border-2 border-primary/20 rounded-xl p-6 space-y-3">
+            {/* App Logo */}
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <span className="text-2xl">☪️</span>
+              <span className="text-lg font-bold text-primary font-arabic">نور الإسلام</span>
+            </div>
+
             <p className="text-sm text-muted-foreground">بسم الله الرحمن الرحيم</p>
             <h3 className="text-2xl font-bold text-primary font-arabic">شهادة إتمام ختمة</h3>
             <div className="w-16 h-0.5 bg-primary/30 mx-auto" />
+
+            {/* User Name */}
+            <p className="text-xl font-bold text-foreground">{userName}</p>
 
             <p className="text-4xl font-bold text-primary">#{khatma.id}</p>
 
@@ -91,6 +108,37 @@ export function KhatmaSection() {
           <h2 className="text-3xl font-bold text-primary font-arabic">تتبع الختمات</h2>
           <p className="text-muted-foreground mt-2">تابع تقدمك في ختم القرآن الكريم</p>
         </div>
+
+        {/* Target Duration */}
+        <Card className="mb-6">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3 justify-between flex-wrap">
+              <div className="flex items-center gap-2">
+                <Calendar className="h-5 w-5 text-primary" />
+                <span className="font-semibold">مدة الختمة:</span>
+              </div>
+              <Select
+                value={String(targetMonths)}
+                onValueChange={(v) => setTargetMonths(Number(v))}
+              >
+                <SelectTrigger className="w-40">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1">شهر واحد</SelectItem>
+                  <SelectItem value="2">شهرين</SelectItem>
+                  <SelectItem value="3">3 أشهر</SelectItem>
+                  <SelectItem value="4">4 أشهر</SelectItem>
+                  <SelectItem value="6">6 أشهر</SelectItem>
+                  <SelectItem value="12">سنة</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <p className="text-sm text-muted-foreground mt-2 text-center">
+              الورد اليومي المطلوب: <span className="font-bold text-primary">{dailyTarget} صفحة/يوم</span>
+            </p>
+          </CardContent>
+        </Card>
 
         {/* Current Progress */}
         <Card className="mb-6 border-2 border-primary/20">
