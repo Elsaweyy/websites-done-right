@@ -53,9 +53,17 @@ export function ProfileSection() {
     }
 
     const { data: { publicUrl } } = supabase.storage.from("avatars").getPublicUrl(filePath);
-    setAvatarUrl(publicUrl);
+    const urlWithCacheBust = `${publicUrl}?t=${Date.now()}`;
+    setAvatarUrl(urlWithCacheBust);
+    
+    // Auto-save avatar to profile
+    const error = await updateProfile({ avatar_url: urlWithCacheBust });
     setUploading(false);
-    toast({ title: "تم رفع الصورة ✅" });
+    if (error) {
+      toast({ title: "خطأ في حفظ الصورة", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "تم رفع الصورة ✅" });
+    }
   };
 
   const handleSave = async () => {
