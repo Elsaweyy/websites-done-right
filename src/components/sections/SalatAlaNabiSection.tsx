@@ -4,6 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "@/hooks/use-toast";
+import { usePointsSync } from "@/hooks/usePointsSync";
+import { useChallenges } from "@/hooks/useChallenges";
 
 const salatFormulas = [
   {
@@ -54,6 +56,9 @@ export function SalatAlaNabiSection() {
   });
 
   const audioContextRef = useRef<AudioContext | null>(null);
+  const syncedRef = useRef(false);
+  const { addTasbih } = usePointsSync();
+  const { incrementChallenge } = useChallenges();
 
   // Save to localStorage
   useEffect(() => {
@@ -92,8 +97,11 @@ export function SalatAlaNabiSection() {
     setCount((prev) => prev + 1);
     setTodayTotal((prev) => prev + 1);
     playSound();
+    incrementChallenge("tasbih", 1);
 
     if ((count + 1) === goal) {
+      syncedRef.current = true;
+      addTasbih(goal);
       toast({
         title: "ماشاء الله! 🎉",
         description: `لقد أكملت هدفك ${goal} صلاة على النبي`,
@@ -103,6 +111,7 @@ export function SalatAlaNabiSection() {
 
   const resetCount = () => {
     setCount(0);
+    syncedRef.current = false;
   };
 
   const progress = Math.min((count / goal) * 100, 100);
