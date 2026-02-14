@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { RotateCcw, Volume2, VolumeX, Settings } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { usePointsSync } from "@/hooks/usePointsSync";
+import { useChallenges } from "@/hooks/useChallenges";
 
 const tasbihOptions = [
   { id: 1, text: "سُبْحَانَ اللَّهِ", translation: "سبحان الله" },
@@ -20,6 +22,9 @@ export function TasbihSection() {
   const [target, setTarget] = useState(33);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
+  const { addTasbih } = usePointsSync();
+  const { incrementChallenge } = useChallenges();
+  const syncedRef = useRef(false);
 
   const handleCount = () => {
     if (soundEnabled) {
@@ -34,11 +39,20 @@ export function TasbihSection() {
       oscillator.start();
       oscillator.stop(audioContext.currentTime + 0.05);
     }
-    setCount((prev) => prev + 1);
+    setCount((prev) => {
+      const newCount = prev + 1;
+      incrementChallenge("tasbih", 1);
+      if (newCount >= target && !syncedRef.current) {
+        syncedRef.current = true;
+        addTasbih(target);
+      }
+      return newCount;
+    });
   };
 
   const resetCount = () => {
     setCount(0);
+    syncedRef.current = false;
   };
 
   const progress = Math.min((count / target) * 100, 100);
