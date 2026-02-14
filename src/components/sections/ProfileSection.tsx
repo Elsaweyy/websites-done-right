@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,7 +7,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import { useToast } from "@/hooks/use-toast";
-import { User, Save, LogOut, Trophy, BookOpen, Star } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { User, Save, LogOut, Trophy, BookOpen, Star, Camera, Loader2 } from "lucide-react";
 
 export function ProfileSection() {
   const { user, signOut } = useAuth();
@@ -17,6 +18,8 @@ export function ProfileSection() {
   const [username, setUsername] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (profile) {
@@ -25,6 +28,35 @@ export function ProfileSection() {
       setAvatarUrl(profile.avatar_url || "");
     }
   }, [profile]);
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast({ title: "خطأ", description: "يرجى اختيار صورة", variant: "destructive" });
+      return;
+    }
+
+    setUploading(true);
+    const fileExt = file.name.split(".").pop();
+    const filePath = `${user.id}/avatar.${fileExt}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("avatars")
+      .upload(filePath, file, { upsert: true });
+
+    if (uploadError) {
+      toast({ title: "خطأ في رفع الصورة", description: uploadError.message, variant: "destructive" });
+      setUploading(false);
+      return;
+    }
+
+    const { data: { publicUrl } } = supabase.storage.from("avatars").getPublicUrl(filePath);
+    setAvatarUrl(publicUrl);
+    setUploading(false);
+    toast({ title: "تم رفع الصورة ✅" });
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -52,12 +84,28 @@ export function ProfileSection() {
         <Card className="mb-6">
           <CardContent className="p-6 space-y-4">
             <div className="flex justify-center">
-              <Avatar className="w-24 h-24">
-                <AvatarImage src={avatarUrl} />
-                <AvatarFallback className="text-2xl">
-                  {displayName?.[0] || user?.email?.[0] || "؟"}
-                </AvatarFallback>
-              </Avatar>
+              <div className="relative">
+                <Avatar className="w-24 h-24">
+                  <AvatarImage src={avatarUrl} />
+                  <AvatarFallback className="text-2xl">
+                    {displayName?.[0] || user?.email?.[0] || "؟"}
+                  </AvatarFallback>
+                </Avatar>
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="absolute bottom-0 right-0 bg-primary text-primary-foreground rounded-full p-2 shadow-lg hover:bg-primary/90 transition-colors"
+                  disabled={uploading}
+                >
+                  {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />}
+                </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleAvatarUpload}
+                />
+              </div>
             </div>
 
             <div>
@@ -67,10 +115,6 @@ export function ProfileSection() {
             <div>
               <Label>اسم المستخدم</Label>
               <Input value={username} onChange={e => setUsername(e.target.value)} placeholder="username" dir="ltr" />
-            </div>
-            <div>
-              <Label>رابط الصورة</Label>
-              <Input value={avatarUrl} onChange={e => setAvatarUrl(e.target.value)} placeholder="https://..." dir="ltr" />
             </div>
 
             <Button onClick={handleSave} className="w-full gap-2" disabled={saving}>

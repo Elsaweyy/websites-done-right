@@ -7,6 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useKhatma, Khatma } from "@/hooks/useKhatma";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
+import { usePointsSync } from "@/hooks/usePointsSync";
+import { useChallenges } from "@/hooks/useChallenges";
 import { BookOpen, Award, Plus, RotateCcw, Share2, X, Calendar } from "lucide-react";
 
 export function KhatmaSection() {
@@ -16,6 +18,8 @@ export function KhatmaSection() {
   } = useKhatma();
   const { user } = useAuth();
   const { profile } = useProfile();
+  const { addPagesRead, completeKhatma } = usePointsSync();
+  const { incrementChallenge } = useChallenges();
   const [pagesToAdd, setPagesToAdd] = useState(1);
   const [showCertificate, setShowCertificate] = useState<Khatma | null>(null);
   const prevKhatmaCount = useRef(khatmaList.length);
@@ -23,6 +27,7 @@ export function KhatmaSection() {
   useEffect(() => {
     if (khatmaList.length > prevKhatmaCount.current) {
       setShowCertificate(khatmaList[khatmaList.length - 1]);
+      completeKhatma();
     }
     prevKhatmaCount.current = khatmaList.length;
   }, [khatmaList.length]);
@@ -171,7 +176,7 @@ export function KhatmaSection() {
             </div>
 
             <div className="flex gap-2 justify-center">
-              <Button onClick={() => addPages(pagesToAdd)} className="gap-2">
+              <Button onClick={() => { addPages(pagesToAdd); addPagesRead(pagesToAdd); incrementChallenge("khatmaPages", pagesToAdd); }} className="gap-2">
                 <Plus className="h-4 w-4" />
                 أضف {pagesToAdd} {pagesToAdd === 1 ? "صفحة" : "صفحات"}
               </Button>
